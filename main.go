@@ -2,10 +2,11 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
 
-	bolt "go.etcd.io/bbolt"
+	"github.com/sandy1206/GoKeyDB/db"
 )
 
 var (
@@ -23,29 +24,27 @@ func parseFlags() {
 
 func main() {
 	parseFlags()
-	db, err := bolt.Open(*dbLocation, 0600, nil)
+	db, close, err := db.NewDatabase(*dbLocation)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Error opening database: %v: %q", *dbLocation, err)
 	}
-	defer db.Close()
+	defer close()
 
 	http.HandleFunc("/get", func(w http.ResponseWriter, r *http.Request) {
-		key := r.URL.Query().Get("key")
-		if key == "" {
-			http.Error(w, "key is required", http.StatusBadRequest)
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("ok"))
+		r.ParseForm()
+		key := r.Form.Get("key")
+		value, err := db.GetKey(key)
+		fmt.Println(value, err)
 
 	})
 
 	http.HandleFunc("/set", func(w http.ResponseWriter, r *http.Request) {
-		key := r.URL.Query().Get("Key:")
-		if key == "" {
-			http.Error(w, "key is required", http.StatusBadRequest)
-			return
-		}
+		r.ParseForm()
+		key := r.Form.Get("key")
+		value := r.Form.Get("value")
+		err := db.SetKey(key, []byte(value))
+		fmt.Println(err)
+
 	})
 
 	http.ListenAndServe(*httpAddr, nil)
