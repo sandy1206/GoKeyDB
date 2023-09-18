@@ -19,13 +19,15 @@ func NewDatabase(dbPath string) (db *Database, closeFunc func() error, err error
 	if err != nil {
 		return nil, nil, err
 	}
+
 	db = &Database{db: boltDb}
 	closeFunc = boltDb.Close
+
 	if err := db.createDefaultBucket(); err != nil {
 		closeFunc()
 		return nil, nil, fmt.Errorf("creating default bucket: %w", err)
 	}
-	return &Database{db: boltDb}, closeFunc, nil
+	return db, closeFunc, nil
 }
 
 func (d *Database) createDefaultBucket() error {
