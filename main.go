@@ -2,11 +2,11 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/sandy1206/GoKeyDB/db"
+	"github.com/sandy1206/GoKeyDB/web"
 )
 
 var (
@@ -30,22 +30,10 @@ func main() {
 	}
 	defer close()
 
-	http.HandleFunc("/get", func(w http.ResponseWriter, r *http.Request) {
-		r.ParseForm()
-		key := r.Form.Get("key")
-		value, err := db.GetKey(key)
-		fmt.Println(value, err)
+	srv := web.NewServer(db)
 
-	})
-
-	http.HandleFunc("/set", func(w http.ResponseWriter, r *http.Request) {
-		r.ParseForm()
-		key := r.Form.Get("key")
-		value := r.Form.Get("value")
-		err := db.SetKey(key, []byte(value))
-		fmt.Println(err)
-
-	})
+	http.HandleFunc("/get", srv.GetHandler)
+	http.HandleFunc("/set", srv.SetHandler)
 
 	http.ListenAndServe(*httpAddr, nil)
 
