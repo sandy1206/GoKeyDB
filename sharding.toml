@@ -1,0 +1,11 @@
+[[shards]]
+name = "Mumbai"
+idx = 0
+
+[[shards]]
+name = "Pune"
+idx = 1
+
+[[shards]]
+name = "Delhi"
+idx = 2
